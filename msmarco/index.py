@@ -46,19 +46,20 @@ def index_msmarco(tokenizer=snowball_tokenizer):
 
     msmarco_unzipped_path = msmarco_corpus_unzipped()
 
-    body_iter = csv_col_iter(msmarco_unzipped_path, 3)
-    title_iter = csv_col_iter(msmarco_unzipped_path, 2)
     df = pd.DataFrame()
-    print("Indexing body")
-    df['body_snowball'] = SearchArray.index(body_iter, truncate=True, tokenizer=tokenizer)
-    print("Indexing title")
-    df['title_snowball'] = SearchArray.index(title_iter, truncate=True, tokenizer=tokenizer)
+    # Read individually to not keep this DF in memory
     print("Saving ids")
     df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[0], header=None)
     print("Getting URL")
-    df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[1], header=None)
+    df['url'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[1], header=None)
     print("Getting titles")
-    df['msmarco_title'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[2], header=None)
+    df['title'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[2], header=None)
+    body_iter = csv_col_iter(msmarco_unzipped_path, 3)
+    title_iter = csv_col_iter(msmarco_unzipped_path, 2)
+    print("Indexing body")
+    df['body_idx'] = SearchArray.index(body_iter, truncate=True, tokenizer=tokenizer)
+    print("Indexing title")
+    df['title_idx'] = SearchArray.index(title_iter, truncate=True, tokenizer=tokenizer)
     # Save to pickle
     df.to_pickle(index_path(tokenizer=tokenizer))
 
