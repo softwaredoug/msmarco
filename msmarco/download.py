@@ -8,6 +8,13 @@ import pathlib
 import gzip
 
 
+# Data root at home dir ~/.msmarco
+DATA_ROOT = pathlib.Path.home() / ".msmarco"
+
+# Create if doesn't exist
+DATA_ROOT.mkdir(exist_ok=True)
+
+
 def download_file(url):
     local_filename = url.split('/')[-1]
     # NOTE the stream=True parameter below
@@ -22,15 +29,15 @@ def download_file(url):
 
 
 def msmarco_corpus_path():
-    return "data/msmarco-docs.tsv.gz"
+    return f"{DATA_ROOT}/msmarco-docs.tsv.gz"
 
 
 def msmarco_qrels_path():
-    return "data/msmarco-doctrain-qrels.tsv.gz"
+    return f"{DATA_ROOT}/msmarco-doctrain-qrels.tsv.gz"
 
 
 def msmarco_queries_path():
-    return "data/msmarco-doctrain-queries.tsv.gz"
+    return f"{DATA_ROOT}/msmarco-doctrain-queries.tsv.gz"
 
 
 def msmarco_exists():
@@ -51,11 +58,9 @@ def download_msmarco():
     for url in urls:
         #  url = "https://msmarco.blob.core.windows.net/msmarcoranking/msmarco-docs.tsv.gz"
         download_file(url)
-        # Ensure data directory
-        pathlib.Path("data").mkdir(exist_ok=True)
         # Move to data directory
         path = url.split("/")[-1]
-        pathlib.Path(path).rename(f"data/{path}")
+        pathlib.Path(path).rename(f"{DATA_ROOT}/{path}")
 
 
 def msmarco_download(force=False):
@@ -82,7 +87,7 @@ def msmarco_corpus_unzipped():
     path = msmarco_corpus_path()
 
     # Loop every .gz file in data and unzip
-    msmarco_unzipped_path = 'data/msmarco-docs.tsv'
+    msmarco_unzipped_path = f"{DATA_ROOT}/msmarco-docs.tsv"
     msmarco_unzipped_path = pathlib.Path(msmarco_unzipped_path)
 
     if not msmarco_unzipped_path.exists():

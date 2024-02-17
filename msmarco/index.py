@@ -1,10 +1,11 @@
-from download import msmarco_unzipped
-from searcharray import SearchArray
-from tokenizers import snowball_tokenizer
+from msmarco.download import msmarco_corpus_unzipped, DATA_ROOT
+from msmarco.tokenizers import snowball_tokenizer
 
 import pandas as pd
+import pathlib
 import csv
 import sys
+from searcharray import SearchArray
 
 import logging
 module_logger = logging.getLogger('searcharray.indexing')
@@ -19,7 +20,17 @@ module_logger.addHandler(ch)
 module_logger.setLevel(logging.DEBUG)
 
 
-def index_msmarco():
+def index_path(tokenizer=snowball_tokenizer):
+    tokenizer_name = tokenizer.__name__
+    return f"{DATA_ROOT}/msmarco_indexed_{tokenizer_name}.pkl"
+
+
+def indexed_exists(tokenizer=snowball_tokenizer):
+    return pathlib.Path(index_path(tokenizer=tokenizer)).exists()
+
+
+def index_msmarco(tokenizer=snowball_tokenizer):
+    """Basic snowball stemmed msmarco indexing"""
 
     csv.field_size_limit(sys.maxsize)
 
@@ -33,21 +44,32 @@ def index_msmarco():
                     break
                 yield col
 
-    msmarco_unzipped_path = msmarco_unzipped()
+    msmarco_unzipped_path = msmarco_corpus_unzipped()
 
     body_iter = csv_col_iter(msmarco_unzipped_path, 3)
     title_iter = csv_col_iter(msmarco_unzipped_path, 2)
     df = pd.DataFrame()
     print("Indexing body")
-    df['body_snowball'] = SearchArray.index(body_iter, truncate=True, tokenizer=snowball_tokenizer)
+    df['body_snowball'] = SearchArray.index(body_iter, truncate=True, tokenizer=tokenizer)
     print("Indexing title")
-    df['title_snowball'] = SearchArray.index(title_iter, truncate=True, tokenizer=snowball_tokenizer)
+    df['title_snowball'] = SearchArray.index(title_iter, truncate=True, tokenizer=tokenizer)
     print("Saving ids")
-    # df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[0], header=None)
+    df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[0], header=None)
     print("Getting URL")
-    # df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[1], header=None)
+    df['msmarco_id'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[1], header=None)
+    print("Getting titles")
+    df['msmarco_title'] = pd.read_csv(msmarco_unzipped_path, delimiter="\t", usecols=[2], header=None)
     # Save to pickle
-    df.to_pickle("data/msmarco_indexed.pkl")
+    df.to_pickle(index_path(tokenizer=tokenizer))
+
+
+def indexed(tokenizer=snowball_tokenizer):
+    if not indexed_exists(tokenizer=tokenizer):
+        idx_path = index_path(tokenizer=tokenizer)
+        print(f"Cannot find indexed file at {idx_path}")
+        print("Indexing")
+        index_msmarco()
+    return pd.read_pickle(index_path(tokenizer=tokenizer))
 
 
 if __name__ == "__main__":
