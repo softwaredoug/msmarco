@@ -88,26 +88,46 @@ def queries() -> pd.DataFrame:
 
 def corpus() -> pd.DataFrame:
     msmarco_unzipped_path = msmarco_corpus_unzipped()
-    return pd.read_csv(msmarco_unzipped_path, delimiter="\t", header=None)
+    df = pd.read_csv(msmarco_unzipped_path, delimiter="\t", header=None)
+    return df.rename(columns={0: 'msmarco_id', 1: 'url', 2: 'title', 3: 'body'})
 
 
-def _minimarco_path():
+def _minimarco_corpus_path():
     return f"{DATA_ROOT}/minimarco.pkl"
 
 
-def minimarco(size=None) -> pd.DataFrame:
-    if pathlib.Path(_minimarco_path()).exists():
-        return pd.read_pickle(_minimarco_path())
+def _minimarco_queries_path():
+    return f"{DATA_ROOT}/minimarco_queries.pkl"
 
+
+def minimarco(size=None, num_unrels=10, rebuild=False) -> pd.DataFrame:
+    both_files_exist = (pathlib.Path(_minimarco_corpus_path()).exists()
+                        and pathlib.Path(_minimarco_queries_path()).exists())
+    if not rebuild and both_files_exist:
+        return pd.read_pickle(_minimarco_corpus_path()), pd.read_pickle(_minimarco_queries_path())
+
+    print(f"Rebuilding minimarco w/ {size} queries and {num_unrels} unrels per query.")
     queries_df = queries()
     qrels_df = qrels(nrows=size)    # Merge queries and qrels
     corpus_df = corpus()
     # Merge queries and qrels
     minimarco = pd.merge(qrels_df, queries_df, on="query_id")
     # Merge only corpus ids also in qrels
-    minimarco.merge(corpus_df, on="msmarco_id", how="inner")
-    minimarco.to_pickle(_minimarco_path())
-    return minimarco
+    minimarco = minimarco.merge(corpus_df, on="msmarco_id", how="left")
+    minimarco_query_df = minimarco[["query_id", "query", "msmarco_id"]].drop_duplicates()
+    minimarco = minimarco[corpus_df.columns]
+    # Sample num_unrels * size from corpus
+    unrels = corpus_df.sample(num_unrels * size)
+    minimarco = pd.concat([minimarco, unrels], axis=0)
+    # Dedup
+    minimarco = minimarco.drop_duplicates(subset="msmarco_id")
+    minimarco['title'] = minimarco['title'].fillna('')
+    minimarco['body'] = minimarco['body'].fillna('')
+    minimarco.to_pickle(_minimarco_corpus_path())
+    print(f"Saved {len(minimarco)} rows to {_minimarco_corpus_path()}")
+    minimarco_query_df.to_pickle(_minimarco_queries_path())
+    print(f"Saved {len(minimarco_query_df)} rows to {_minimarco_queries_path()}")
+    return minimarco, minimarco_query_df
 
 
 def qrels(nrows=10000) -> pd.DataFrame:

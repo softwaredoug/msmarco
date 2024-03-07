@@ -17,3 +17,9 @@ def snowball_tokenizer(text):
     split = text.lower().split()
     return [stem_word(token)
             for token in split]
+
+
+def ws_tokenizer(text):
+    text = text.translate(all_trans)
+    split = text.lower().split()
+    return split
