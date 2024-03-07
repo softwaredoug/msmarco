@@ -6,6 +6,7 @@ https://microsoft.github.io/msmarco/Datasets.html
 import requests
 import pathlib
 import gzip
+import pandas as pd
 
 
 # Data root at home dir ~/.msmarco
@@ -28,22 +29,22 @@ def download_file(url):
     return local_filename
 
 
-def msmarco_corpus_path():
+def _corpus_path():
     return f"{DATA_ROOT}/msmarco-docs.tsv.gz"
 
 
-def msmarco_qrels_path():
+def _qrels_path():
     return f"{DATA_ROOT}/msmarco-doctrain-qrels.tsv.gz"
 
 
-def msmarco_queries_path():
+def _queries_path():
     return f"{DATA_ROOT}/msmarco-doctrain-queries.tsv.gz"
 
 
 def msmarco_exists():
-    corpus_path = pathlib.Path(msmarco_corpus_path())
-    qr_path = pathlib.Path(msmarco_qrels_path())
-    queries_path = pathlib.Path(msmarco_queries_path())
+    corpus_path = pathlib.Path(_corpus_path())
+    qr_path = pathlib.Path(_qrels_path())
+    queries_path = pathlib.Path(_queries_path())
     return corpus_path.exists() and qr_path.exists() and queries_path.exists()
 
 
@@ -66,25 +67,59 @@ def download_msmarco():
 def msmarco_download(force=False):
     if not msmarco_exists() or force:
         download_msmarco()
-    return msmarco_corpus_path(), msmarco_qrels_path(), msmarco_queries_path()
+    return _corpus_path(), _qrels_path(), _queries_path()
 
 
-def qrels():
+def qrels_path():
     return msmarco_download()[1]
 
 
-def corpus():
+def corpus_path():
     return msmarco_download()[0]
 
 
-def queries():
+def queries_path():
     return msmarco_download()[2]
+
+
+def queries() -> pd.DataFrame:
+    return pd.read_csv(queries_path(), delimiter="\t", header=None, names=["query_id", "query"])
+
+
+def corpus() -> pd.DataFrame:
+    msmarco_unzipped_path = msmarco_corpus_unzipped()
+    return pd.read_csv(msmarco_unzipped_path, delimiter="\t", header=None)
+
+
+def _minimarco_path():
+    return f"{DATA_ROOT}/minimarco.pkl"
+
+
+def minimarco(size=None) -> pd.DataFrame:
+    if pathlib.Path(_minimarco_path()).exists():
+        return pd.read_pickle(_minimarco_path())
+
+    queries_df = queries()
+    qrels_df = qrels(nrows=size)    # Merge queries and qrels
+    corpus_df = corpus()
+    # Merge queries and qrels
+    minimarco = pd.merge(qrels_df, queries_df, on="query_id")
+    # Merge only corpus ids also in qrels
+    minimarco.merge(corpus_df, on="msmarco_id", how="inner")
+    minimarco.to_pickle(_minimarco_path())
+    return minimarco
+
+
+def qrels(nrows=10000) -> pd.DataFrame:
+    return pd.read_csv(qrels_path(), delimiter=" ",
+                       nrows=nrows,
+                       header=None, names=["query_id", "q0", "msmarco_id", "grade"])
 
 
 def msmarco_corpus_unzipped():
     if not msmarco_exists():
         download_msmarco()
-    path = msmarco_corpus_path()
+    path = _corpus_path()
 
     # Loop every .gz file in data and unzip
     msmarco_unzipped_path = f"{DATA_ROOT}/msmarco-docs.tsv"
