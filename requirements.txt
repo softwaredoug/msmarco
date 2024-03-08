@@ -16,6 +16,7 @@ comm==0.2.1
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
+docutils==0.20.1
 executing==2.0.1
 fastjsonschema==2.19.1
 fqdn==1.5.1
@@ -23,10 +24,12 @@ h11==0.14.0
 httpcore==1.0.3
 httpx==0.26.0
 idna==3.6
+importlib-metadata==7.0.1
 ipykernel==6.29.2
 ipython==8.21.0
 ipywidgets==8.1.2
 isoduration==20.11.0
+jaraco.classes==3.3.1
 jedi==0.19.1
 Jinja2==3.1.3
 json5==0.9.14
@@ -45,13 +48,18 @@ jupyterlab==4.1.1
 jupyterlab_pygments==0.3.0
 jupyterlab_server==2.25.3
 jupyterlab_widgets==3.0.10
+keyring==24.3.1
+markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 matplotlib-inline==0.1.6
+mdurl==0.1.2
 mistune==3.0.2
+more-itertools==10.2.0
 nbclient==0.9.0
 nbconvert==7.16.0
 nbformat==5.9.2
 nest-asyncio==1.6.0
+nh3==0.2.15
 notebook==7.1.0
 notebook_shim==0.2.4
 numpy==1.26.4
@@ -61,6 +69,7 @@ pandas==2.2.0
 pandocfilters==1.5.1
 parso==0.8.3
 pexpect==4.9.0
+pkginfo==1.10.0
 platformdirs==4.2.0
 prometheus_client==0.20.0
 prompt-toolkit==3.0.43
@@ -77,12 +86,17 @@ PyYAML==6.0.1
 pyzmq==25.1.2
 qtconsole==5.5.1
 QtPy==2.4.1
+readme_renderer==43.0
 referencing==0.33.0
 requests==2.31.0
+requests-toolbelt==1.0.0
 rfc3339-validator==0.1.4
+rfc3986==2.0.0
 rfc3986-validator==0.1.1
+rich==13.7.1
 rpds-py==0.18.0
-searcharray==0.0.38
+scipy==1.12.0
+-e git+ssh://git@github.com/softwaredoug/searcharray.git@b43bd4b8dfab2f54e11ef072be0434afdd611744#egg=searcharray
 Send2Trash==1.8.2
 six==1.16.0
 sniffio==1.3.0
@@ -93,6 +107,7 @@ terminado==0.18.0
 tinycss2==1.2.1
 tornado==6.4
 traitlets==5.14.1
+twine==5.0.0
 types-python-dateutil==2.8.19.20240106
 tzdata==2023.4
 uri-template==1.3.0
@@ -102,3 +117,4 @@ webcolors==1.13
 webencodings==0.5.1
 websocket-client==1.7.0
 widgetsnbextension==4.0.10
+zipp==3.17.0
