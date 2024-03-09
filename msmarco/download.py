@@ -92,23 +92,24 @@ def corpus() -> pd.DataFrame:
     return df.rename(columns={0: 'msmarco_id', 1: 'url', 2: 'title', 3: 'body'})
 
 
-def _minimarco_corpus_path():
-    return f"{DATA_ROOT}/minimarco.pkl"
+def _minimarco_corpus_path(num_queries, num_unrels):
+    return f"{DATA_ROOT}/minimarco_q{num_queries}_u{num_unrels}.pkl"
 
 
-def _minimarco_queries_path():
-    return f"{DATA_ROOT}/minimarco_queries.pkl"
+def _minimarco_queries_path(num_queries, num_unrels):
+    return f"{DATA_ROOT}/minimarco_q{num_queries}_u{num_unrels}_queries.pkl"
 
 
-def minimarco(size=None, num_unrels=10, rebuild=False) -> pd.DataFrame:
-    both_files_exist = (pathlib.Path(_minimarco_corpus_path()).exists()
-                        and pathlib.Path(_minimarco_queries_path()).exists())
+def minimarco(num_queries, num_unrels, rebuild=False) -> pd.DataFrame:
+    corpus_path = _minimarco_corpus_path(num_queries, num_unrels)
+    queries_path = _minimarco_queries_path(num_queries, num_unrels)
+    both_files_exist = (pathlib.Path(corpus_path).exists() and pathlib.Path(queries_path).exists())
     if not rebuild and both_files_exist:
-        return pd.read_pickle(_minimarco_corpus_path()), pd.read_pickle(_minimarco_queries_path())
+        return pd.read_pickle(corpus_path), pd.read_pickle(queries_path)
 
-    print(f"Rebuilding minimarco w/ {size} queries and {num_unrels} unrels per query.")
+    print(f"Rebuilding minimarco w/ {num_queries} queries and {num_unrels} unrels per query.")
     queries_df = queries()
-    qrels_df = qrels(nrows=size)    # Merge queries and qrels
+    qrels_df = qrels(nrows=num_queries)    # Merge queries and qrels
     corpus_df = corpus()
     # Merge queries and qrels
     minimarco = pd.merge(qrels_df, queries_df, on="query_id")
@@ -117,16 +118,16 @@ def minimarco(size=None, num_unrels=10, rebuild=False) -> pd.DataFrame:
     minimarco_query_df = minimarco[["query_id", "query", "msmarco_id"]].drop_duplicates()
     minimarco = minimarco[corpus_df.columns]
     # Sample num_unrels * size from corpus
-    unrels = corpus_df.sample(num_unrels * size)
+    unrels = corpus_df.sample(num_unrels * num_queries)
     minimarco = pd.concat([minimarco, unrels], axis=0)
     # Dedup
     minimarco = minimarco.drop_duplicates(subset="msmarco_id")
     minimarco['title'] = minimarco['title'].fillna('')
     minimarco['body'] = minimarco['body'].fillna('')
-    minimarco.to_pickle(_minimarco_corpus_path())
-    print(f"Saved {len(minimarco)} rows to {_minimarco_corpus_path()}")
-    minimarco_query_df.to_pickle(_minimarco_queries_path())
-    print(f"Saved {len(minimarco_query_df)} rows to {_minimarco_queries_path()}")
+    minimarco.to_pickle(corpus_path)
+    print(f"Saved {len(minimarco)} rows to {corpus_path}")
+    minimarco_query_df.to_pickle(queries_path)
+    print(f"Saved {len(minimarco_query_df)} rows to {queries_path}")
     return minimarco, minimarco_query_df
 
 

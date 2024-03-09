@@ -15,9 +15,12 @@ def judgments(num_judgments=None):
 
 def grade_results(judgments, results) -> pd.DataFrame:
     # Merge judgments into results on doc_id, query_id
-    labeled_results = pd.merge(results, judgments, on=["query_id", "msmarco_id"])
+    labeled_results = pd.merge(results, judgments, on=["query_id", "msmarco_id"],
+                               how="left")
     # Compute reciprical rank, 1/ rank, on each row
     labeled_results["reciprical_rank"] = 1 / labeled_results["rank"]
+    labeled_results["grade"] = labeled_results["grade"].fillna(0)
+    labeled_results.loc[labeled_results["grade"] != 1, "reciprical_rank"] = 0
     labeled_results = labeled_results.drop(columns=["query_y"])
     labeled_results.rename(columns={"query_x": "query"}, inplace=True)
     return labeled_results
