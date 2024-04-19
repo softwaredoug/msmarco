@@ -13,12 +13,16 @@ certifi==2024.2.2
 cffi==1.16.0
 charset-normalizer==3.3.2
 comm==0.2.1
+contourpy==1.2.0
+cycler==0.12.1
+Cython==3.0.9
 debugpy==1.8.1
 decorator==5.1.1
 defusedxml==0.7.1
 docutils==0.20.1
 executing==2.0.1
 fastjsonschema==2.19.1
+fonttools==4.49.0
 fqdn==1.5.1
 h11==0.14.0
 httpcore==1.0.3
@@ -49,8 +53,10 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.25.3
 jupyterlab_widgets==3.0.10
 keyring==24.3.1
+kiwisolver==1.4.5
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
+matplotlib==3.8.3
 matplotlib-inline==0.1.6
 mdurl==0.1.2
 mistune==3.0.2
@@ -69,6 +75,7 @@ pandas==2.2.0
 pandocfilters==1.5.1
 parso==0.8.3
 pexpect==4.9.0
+pillow==10.2.0
 pkginfo==1.10.0
 platformdirs==4.2.0
 prometheus_client==0.20.0
@@ -78,6 +85,7 @@ ptyprocess==0.7.0
 pure-eval==0.2.2
 pycparser==2.21
 Pygments==2.17.2
+pyparsing==3.1.2
 PyStemmer==2.2.0.1
 python-dateutil==2.8.2
 python-json-logger==2.0.7
@@ -96,7 +104,7 @@ rfc3986-validator==0.1.1
 rich==13.7.1
 rpds-py==0.18.0
 scipy==1.12.0
--e git+ssh://git@github.com/softwaredoug/searcharray.git@b43bd4b8dfab2f54e11ef072be0434afdd611744#egg=searcharray
+searcharray==0.0.47
 Send2Trash==1.8.2
 six==1.16.0
 sniffio==1.3.0
