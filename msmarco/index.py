@@ -29,12 +29,14 @@ def indexed_exists(tokenizer=snowball_tokenizer):
     return pathlib.Path(index_path(tokenizer=tokenizer)).exists()
 
 
+csv.field_size_limit(sys.maxsize)
+
+# Use csv iterator for memory efficiency
 def index_msmarco(tokenizer=snowball_tokenizer):
     """Basic snowball stemmed msmarco indexing"""
 
-    csv.field_size_limit(sys.maxsize)
+    msmarco_unzipped_path = msmarco_corpus_unzipped()
 
-    # Use csv iterator for memory efficiency
     def csv_col_iter(msmarco_unzipped_path, col_no, num_rows=None):
         with open(msmarco_unzipped_path, "rt") as f:
             csv_reader = csv.reader(f, delimiter="\t")
@@ -43,8 +45,6 @@ def index_msmarco(tokenizer=snowball_tokenizer):
                 if num_rows is not None and row_no >= num_rows:
                     break
                 yield col
-
-    msmarco_unzipped_path = msmarco_corpus_unzipped()
 
     df = pd.DataFrame()
     # Read individually to not keep this DF in memory
